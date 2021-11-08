@@ -1,0 +1,25 @@
+{
+    "name": "nanasess/eccube2-fixture-generator",
+    "type": "library",
+    "require": {
+        "ec-cube2/cli": "*"
+    },
+    "require-dev": {
+        "fzaninotto/faker": "^1.8",
+        "ec-cube2/ec-cube2": "*"
+    },
+    "license": "LGPL-3.0",
+    "autoload": {
+        "files": ["bootstrap.php"],
+        "psr-4": {
+            "Eccube2\\Command\\": "src/Command",
+            "Eccube2\\Tests\\Fixture\\": "tests/Fixture"
+        }
+    },
+    "authors": [
+        {
+            "name": "Kentaro Ohkouchi",
+            "email": "nanasess@fsm.ne.jp"
+        }
+    ]
+}
