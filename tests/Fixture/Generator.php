@@ -8,6 +8,8 @@ use SC_Helper_Purchase_Ex;
 use SC_Helper_TaxRule_Ex;
 use SC_Query_Ex;
 use SC_Utils_Ex;
+use function class_alias;
+use function class_exists;
 
 class Generator
 {
@@ -705,4 +707,8 @@ class Generator
 
         return $order_id;
     }
+}
+
+if (!class_exists('FixtureGenerator')) {
+    class_alias('Eccube2\Tests\Fixture\Generator', 'FixtureGenerator');
 }
