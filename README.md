@@ -5,17 +5,22 @@ The `eccube:fixtures:generate` command generate of dummy data.
 ## Installation
 
 ```
-composer require ec-cube2/cli --dev
-composer require nanasess/eccube2-fixture-generator --dev
+composer require nanasess/eccube2-fixture-generator
 ```
 
-## Usage
+### (Optional) cli interface
+
+```
+composer require ec-cube2/cli --dev
+```
+
+## Usage of cli interface
 
 ```
 php data/vendor/bin/eccube eccube:fixtures:generate [options]
 ```
 
-## Options
+### cli Options
 
 ```
       --with-locale=WITH-LOCALE  Set to the locale. [default: "ja_JP"]
