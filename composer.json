@@ -2,19 +2,22 @@
     "name": "nanasess/eccube2-fixture-generator",
     "type": "library",
     "require": {
-        "ec-cube2/cli": "*"
-    },
-    "require-dev": {
-        "fzaninotto/faker": "^1.8",
-        "ec-cube2/ec-cube2": "*"
+        "fzaninotto/faker": "^1.8"
     },
     "license": "LGPL-3.0",
     "autoload": {
         "files": ["bootstrap.php"],
         "psr-4": {
-            "Eccube2\\Command\\": "src/Command",
             "Eccube2\\Tests\\Fixture\\": "tests/Fixture"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Eccube2\\Command\\": "src/Command"
+        }
+    },
+    "suggest": {
+        "ec-cube2/cli": "Required if using the cli interface."
     },
     "authors": [
         {
