@@ -116,6 +116,8 @@ EOF
                 }
             }
             $output->writeln('');
+
+            return Command::SUCCESS;
         }
     }
 }
