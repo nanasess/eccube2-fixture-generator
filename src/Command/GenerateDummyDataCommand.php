@@ -9,6 +9,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class GenerateDummyDataCommand extends Command
 {
@@ -44,6 +45,7 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $io = new SymfonyStyle($input, $output);
         $locale = $input->getOption('with-locale');
         $numberOfProducts = $input->getOption('products');
         $numberOfOrder = $input->getOption('orders');
@@ -58,10 +60,10 @@ EOF
         $num = $objQuery->count('dtb_customer');
         if ($num < $numberOfCustomer) {
             $num = $numberOfCustomer - $num;
-            $output->write('Generating Customers');
+            $io->write('Generating Customers');
             for ($i = 0; $i < $num; $i++) {
                 $objGenerator->createCustomer();
-                $output->write('.');
+                $io->write('.');
             }
             $objGenerator->createCustomer(null, ['status' => '1']); // non-active member
             $output->writeln('.');
@@ -71,14 +73,14 @@ EOF
         $product_ids = [];
         // 受注生成件数 + 初期データの商品が生成されているはず
         if ($num < ($numberOfProducts + 2)) {
-            $output->write('Generating Products');
+            $io->write('Generating Products');
             // 規格なしも含め Generating Products の分だけ生成する
             for ($i = 0; $i < $numberOfProducts - 1; $i++) {
                 $product_ids[] = $objGenerator->createProduct();
-                $output->write('.');
+                $io->write('.');
             }
             $product_ids[] = $objGenerator->createProduct('規格なし商品', 0);
-            $output->writeln('.');
+            $io->writeln('.');
 
             $category_ids = [];
             // 5件以上のカテゴリを生成する
@@ -101,7 +103,7 @@ EOF
         $objQuery->setLimit(10);
         $product_class_ids = $objQuery->getCol('product_class_id', 'dtb_products_class', 'del_flg = 0');
         if ($num < $numberOfOrder) {
-            $output->write('Generating Orders');
+            $io->write('Generating Orders');
             foreach ($customer_ids as $customer_id) {
                 $target_product_class_ids = array_rand(array_flip($product_class_ids), $faker->numberBetween(2, count($product_class_ids) - 1));
                 $charge = $faker->randomNumber(4);
@@ -112,12 +114,14 @@ EOF
                     $target_statuses = [ORDER_NEW, ORDER_PAY_WAIT, ORDER_PRE_END, ORDER_BACK_ORDER, ORDER_DELIV];
                     $order_status_id = $target_statuses[$faker->numberBetween(0, count($target_statuses) - 1)];
                     $objGenerator->createOrder($customer_id, $target_product_class_ids, 1, $charge, $discount, $order_status_id);
-                    $output->write('.');
+                    $io->write('.');
                 }
             }
-            $output->writeln('');
+            $io->writeln('');
 
             return Command::SUCCESS;
         }
+
+        return Command::SUCCESS;
     }
 }
