@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+  ec-cube:
+    volumes:
+      - ".:/var/www/app:delegated"
+      - "../eccube2-fixture-generator:/var/www/eccube2-fixture-generator"

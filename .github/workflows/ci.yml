@@ -1,0 +1,84 @@
+name: ci
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - '*'
+    paths:
+      - '**'
+      - '!*.md'
+  pull_request:
+    paths:
+      - '**'
+      - '!*.md'
+
+
+jobs:
+  tests:
+    name: tests
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '7.4', '8.0', '8.1', '8.2', '8.3' ]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        path: 'eccube2-fixture-generator'
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        repository: 'EC-CUBE/ec-cube2'
+        path: 'ec-cube'
+
+    - name: copy docker-compose.fixture.yml
+      working-directory: eccube2-fixture-generator
+      run: cp docker-compose.fixture.yml ../ec-cube
+    - name: Setup environment
+      working-directory: ec-cube
+      env:
+        PHP: ${{ matrix.php }}
+      run: |
+        echo "COMPOSE_FILE=docker-compose.yml:docker-compose.pgsql.yml:docker-compose.fixture.yml:docker-compose.owaspzap.yml:docker-compose.owaspzap.daemon.yml" >> $GITHUB_ENV
+        echo "TAG=${PHP}-apache-master" >> $GITHUB_ENV
+
+    - name: Setup to EC-CUBE
+      working-directory: ec-cube
+      run: |
+        sudo chown -R 1001:1000 zap
+        sudo chmod -R g+w zap
+        docker compose up -d --wait
+        docker compose exec -T ec-cube composer install
+        docker compose exec -T ec-cube composer require ec-cube2/cli "dev-master@dev" -W
+        docker compose exec -T ec-cube composer config repositories.fixturegenerator '{"type":"path","url":"../eccube2-fixture-generator"}'
+        docker compose exec -T ec-cube composer remove fzaninotto/faker --dev || true
+        docker compose exec -T ec-cube composer require nanasess/eccube2-fixture-generator "@dev" --dev -W
+        docker compose exec -T ec-cube composer update 'symfony/*' -W
+        docker compose exec -T ec-cube php data/vendor/bin/eccube eccube:fixtures:generate --products=5 --customers=1 --orders=5
+
+    -  working-directory: ec-cube
+       run: |
+        docker compose exec -T postgres psql --user=eccube_db_user eccube_db -c "UPDATE dtb_customer SET email = 'zap_user@example.com' WHERE customer_id = (SELECT MAX(customer_id) FROM dtb_customer WHERE status = 2 AND del_flg = 0);"
+
+    - run: sleep 1
+    - working-directory: ec-cube
+      run: |
+        yarn install
+        yarn run playwright install --with-deps chromium
+        yarn playwright install-deps chromium
+
+    - name: remove total.test
+      # see https://github.com/EC-CUBE/ec-cube2/issues/837
+      working-directory: ec-cube
+      run: rm e2e-tests/test/admin/total/total.test.ts
+    - name: Run to E2E testing
+      working-directory: ec-cube
+      env:
+        HTTPS_PROXY: 'localhost:8090'
+        HTTP_PROXY: 'localhost:8090'
+        CI: 1
+        FORCE_COLOR: 1
+      run: yarn test:e2e e2e-tests/test/admin
