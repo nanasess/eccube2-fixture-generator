@@ -53,11 +53,21 @@ jobs:
         docker compose up -d --wait
         docker compose exec -T ec-cube composer install
         docker compose exec -T ec-cube composer require ec-cube2/cli "dev-master@dev" -W
-        docker compose exec -T ec-cube composer config repositories.fixturegenerator '{"type":"path","url":"../eccube2-fixture-generator"}'
         docker compose exec -T ec-cube composer remove fzaninotto/faker --dev || true
+
+    - name: Install eccube2-fixture-generator
+      working-directory: ec-cube
+      run: |
+        docker compose exec -T ec-cube composer config repositories.fixturegenerator '{"type":"path","url":"../eccube2-fixture-generator"}'
         docker compose exec -T ec-cube composer require nanasess/eccube2-fixture-generator "@dev" --dev -W
-        docker compose exec -T ec-cube composer update 'symfony/*' -W
-        docker compose exec -T ec-cube php data/vendor/bin/eccube eccube:fixtures:generate --products=5 --customers=1 --orders=5
+
+    - name: composer update symfony
+      working-directory: ec-cube
+      run: docker compose exec -T ec-cube composer update 'symfony/*' -W
+
+    - name: execute eccube2-fixture-generator
+      working-directory: ec-cube
+      run: docker compose exec -T ec-cube php data/vendor/bin/eccube eccube:fixtures:generate --products=5 --customers=1 --orders=5
 
     -  working-directory: ec-cube
        run: |
