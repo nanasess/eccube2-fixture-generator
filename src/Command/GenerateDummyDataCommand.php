@@ -119,9 +119,9 @@ EOF
             }
             $io->writeln('');
 
-            return Command::SUCCESS;
+            return 0;
         }
 
-        return Command::SUCCESS;
+        return 0;
     }
 }
