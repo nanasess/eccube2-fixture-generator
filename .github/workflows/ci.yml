@@ -84,7 +84,7 @@ jobs:
       # see https://github.com/EC-CUBE/ec-cube2/issues/837
       working-directory: ec-cube
       run: rm e2e-tests/test/admin/total/total.test.ts
-    - name: Run to E2E testing
+    - name: Run to E2E testing(admin)
       working-directory: ec-cube
       env:
         HTTPS_PROXY: 'localhost:8090'
@@ -92,3 +92,11 @@ jobs:
         CI: 1
         FORCE_COLOR: 1
       run: yarn test:e2e e2e-tests/test/admin
+    - name: Run to E2E testing(front_login)
+      working-directory: ec-cube
+      env:
+        HTTPS_PROXY: 'localhost:8090'
+        HTTP_PROXY: 'localhost:8090'
+        CI: 1
+        FORCE_COLOR: 1
+      run: yarn test:e2e e2e-tests/test/front_login
