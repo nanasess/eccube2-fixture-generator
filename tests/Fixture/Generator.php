@@ -100,7 +100,7 @@ class Generator
             'birth' => $this->faker->dateTimeThisDecade()->format('Y-m-d H:i:s'),
             'status' => '2',     // 本会員
             'secret_key' => SC_Helper_Customer_Ex::sfGetUniqSecretKey(),
-            'point' => $this->faker->randomNumber()
+            'point' => $this->faker->numberBetween(1, 9999)
         ];
 
         return $this->objQuery->extractOnlyColsOf(
