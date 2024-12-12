@@ -72,7 +72,6 @@ class Generator
      */
     public function createCustomerAsArray($email = null, $properties = [])
     {
-        list($zip01, $zip02) = explode('-', $this->faker->postcode);
         list($tel01, $tel02, $tel03) = explode('-', $this->faker->phoneNumber);
         $email = $email ? $email : microtime(true).'.'.$this->faker->safeEmail;
         $customer_id = $this->objQuery->nextVal('dtb_customer_customer_id');
