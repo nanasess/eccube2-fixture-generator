@@ -3,16 +3,11 @@
 namespace Eccube2\Tests\Fixture;
 
 use Faker\Factory as Faker;
-use SC_Helper_Customer_Ex;
-use SC_Helper_Purchase_Ex;
-use SC_Helper_TaxRule_Ex;
-use SC_Query_Ex;
-use SC_Utils_Ex;
 
 class Generator
 {
     /** @var int */
-    const DEFAULT_CREATOR_ID = 2;
+    public const DEFAULT_CREATOR_ID = 2;
 
     /** @var \SC_Query */
     protected $objQuery;
@@ -27,7 +22,7 @@ class Generator
     public function __construct($objQuery = null, $locale = 'ja_JP')
     {
         if ($objQuery === null) {
-            $this->objQuery = SC_Query_Ex::getSingletonInstance();
+            $this->objQuery = \SC_Query_Ex::getSingletonInstance();
         } else {
             $this->objQuery = $objQuery;
         }
@@ -45,12 +40,12 @@ class Generator
     public function createCustomer($email = null, $properties = [])
     {
         $customerValues = $this->createCustomerAsArray($email, $properties);
-        $customerValues['salt'] = SC_Utils_Ex::sfGetRandomString(10);
-        $customerValues['password'] = SC_Utils_Ex::sfGetHashString(
+        $customerValues['salt'] = \SC_Utils_Ex::sfGetRandomString(10);
+        $customerValues['password'] = \SC_Utils_Ex::sfGetHashString(
             $customerValues['password'],
             $customerValues['salt']
         );
-        $customerValues['reminder_answer'] = SC_Utils_Ex::sfGetHashString(
+        $customerValues['reminder_answer'] = \SC_Utils_Ex::sfGetHashString(
             $customerValues['reminder_answer'],
             $customerValues['salt']
         );
@@ -59,6 +54,7 @@ class Generator
         $customerValues['del_flg'] = 0;
 
         $this->objQuery->insert('dtb_customer', $customerValues);
+
         return $customerValues['customer_id'];
     }
 
@@ -72,7 +68,6 @@ class Generator
      */
     public function createCustomerAsArray($email = null, $properties = [])
     {
-        list($zip01, $zip02) = explode('-', $this->faker->postcode);
         list($tel01, $tel02, $tel03) = explode('-', $this->faker->phoneNumber);
         $email = $email ? $email : microtime(true).'.'.$this->faker->safeEmail;
         $customer_id = $this->objQuery->nextVal('dtb_customer_customer_id');
@@ -99,8 +94,8 @@ class Generator
             'mailmaga_flg' => $this->faker->numberBetween(1, 2),
             'birth' => $this->faker->dateTimeThisDecade()->format('Y-m-d H:i:s'),
             'status' => '2',     // 本会員
-            'secret_key' => SC_Helper_Customer_Ex::sfGetUniqSecretKey(),
-            'point' => $this->faker->numberBetween(1, 9999)
+            'secret_key' => \SC_Helper_Customer_Ex::sfGetUniqSecretKey(),
+            'point' => $this->faker->numberBetween(1, 9999),
         ];
 
         return $this->objQuery->extractOnlyColsOf(
@@ -113,6 +108,7 @@ class Generator
      * 商品のダミーデータを生成し配列で返す.
      *
      * @param string $product_name 商品名
+     *
      * @return array 商品のダミーデータの配列
      */
     public function createProductAsArray($product_name = null)
@@ -134,7 +130,7 @@ class Generator
             'creator_id' => self::DEFAULT_CREATOR_ID,
             'create_date' => 'CURRENT_TIMESTAMP',
             'update_date' => 'CURRENT_TIMESTAMP',
-            'deliv_date_id' => $this->faker->numberBetween(1, 9)
+            'deliv_date_id' => $this->faker->numberBetween(1, 9),
         ];
 
         return $this->objQuery->extractOnlyColsOf('dtb_products', $values);
@@ -146,6 +142,7 @@ class Generator
      * @param string $product_name 商品名
      * @param int $product_class_num 商品規格の生成数
      * @param int $product_type_id 商品種別ID
+     *
      * @return int product_id
      */
     public function createProduct($product_name = null, $product_class_num = 3, $product_type_id = PRODUCT_TYPE_NORMAL)
@@ -159,8 +156,8 @@ class Generator
         } else {
             // 規格をランダムに抽出する
             $class_ids = $this->objQuery->getCol('class_id', 'dtb_class', 'del_flg = 0');
-            $class_id1 = $class_ids[$this->faker->numberBetween(0, count($class_ids) - 1)];
-            $class_id2 = $class_ids[$this->faker->numberBetween(0, count($class_ids) - 1)];
+            $class_id1 = $class_ids[$this->faker->numberBetween(0, \count($class_ids) - 1)];
+            $class_id2 = $class_ids[$this->faker->numberBetween(0, \count($class_ids) - 1)];
             if ($class_id1 === $class_id2) {
                 $class_id2 = 0;
             }
@@ -171,12 +168,12 @@ class Generator
             for ($i = 0; $i < $product_class_num; $i++) {
                 $classcategory_ids1 = $this->objQuery->getCol(
                     'classcategory_id', 'dtb_classcategory',
-                    'class_id = ? AND classcategory_id NOT IN ('.implode(', ', array_pad([], count($exist_classcategory_id1), '?')).') AND del_flg = 0',
+                    'class_id = ? AND classcategory_id NOT IN ('.implode(', ', array_pad([], \count($exist_classcategory_id1), '?')).') AND del_flg = 0',
                     array_merge([$class_id1], $exist_classcategory_id1)
                 );
-                $classcategory_id1 = empty($classcategory_ids1) ? 0 : $classcategory_ids1[$this->faker->numberBetween(0, count($classcategory_ids1) - 1)];
+                $classcategory_id1 = empty($classcategory_ids1) ? 0 : $classcategory_ids1[$this->faker->numberBetween(0, \count($classcategory_ids1) - 1)];
 
-                if (in_array($classcategory_id1, $exist_classcategory_id1)
+                if (\in_array($classcategory_id1, $exist_classcategory_id1)
                     || !$this->objQuery->exists('dtb_classcategory', 'classcategory_id = ?', [$classcategory_id1])) {
                     // 見つからない規格分類IDが指定されたら規格を生成しない
                     $classcategory_id1 = 0;
@@ -187,11 +184,11 @@ class Generator
                     $exist_classcategory_id1[] = $classcategory_id1;
                     $classcategory_ids2 = $this->objQuery->getCol(
                         'classcategory_id', 'dtb_classcategory',
-                        'class_id = ? AND classcategory_id NOT IN ('.implode(', ', array_pad([], count($exist_classcategory_id2), '?')).') AND del_flg = 0',
+                        'class_id = ? AND classcategory_id NOT IN ('.implode(', ', array_pad([], \count($exist_classcategory_id2), '?')).') AND del_flg = 0',
                         array_merge([$class_id2], $exist_classcategory_id2)
                     );
-                    $classcategory_id2 = empty($classcategory_ids2) ? 0 : $classcategory_ids2[$this->faker->numberBetween(0, count($classcategory_ids2) - 1)];
-                    if (in_array($classcategory_id2, $exist_classcategory_id2)
+                    $classcategory_id2 = empty($classcategory_ids2) ? 0 : $classcategory_ids2[$this->faker->numberBetween(0, \count($classcategory_ids2) - 1)];
+                    if (\in_array($classcategory_id2, $exist_classcategory_id2)
                         || $classcategory_id1 === $classcategory_id2
                         || !$this->objQuery->exists('dtb_classcategory', 'classcategory_id = ?', [$classcategory_id2])) {
                         $classcategory_id2 = 0;
@@ -218,6 +215,7 @@ class Generator
      * @param int $classcategory_id2 規格分類ID2
      * @param int $del_flg 削除フラグ
      * @param int $product_type_id 商品種別ID
+     *
      * @return array 商品規格のダミーデータの配列
      */
     public function createProductsClassAsArray($product_id, $classcategory_id1 = 0, $classcategory_id2 = 0, $del_flg = 0, $product_type_id = PRODUCT_TYPE_NORMAL)
@@ -255,11 +253,11 @@ class Generator
      * @param int $classcategory_id2 規格分類ID2
      * @param int $del_flg 削除フラグ
      * @param int $product_type_id 商品種別ID
+     *
      * @return int 商品規格ID
      */
     public function createProductsClass($product_id, $classcategory_id1 = 0, $classcategory_id2 = 0, $del_flg = 0, $product_type_id = PRODUCT_TYPE_NORMAL)
     {
-
         $values = $this->createProductsClassAsArray($product_id, $classcategory_id1, $classcategory_id2, $del_flg, $product_type_id);
         $this->objQuery->insert('dtb_products_class', $values);
 
@@ -295,6 +293,7 @@ class Generator
      * 規格を生成して規格IDを返す.
      *
      * @param string $class_name 規格名
+     *
      * @return int class_id
      */
     public function createClass($class_name = null)
@@ -302,12 +301,12 @@ class Generator
         $values = $this->createClassAsArray($class_name);
         $subQueries = [];
         if ($values['rank'] === 0) {
-            $subQueries['rank'] = "(SELECT x.rank FROM (SELECT CASE
+            $subQueries['rank'] = '(SELECT x.rank FROM (SELECT CASE
                                       WHEN max(rank) + 1 IS NULL THEN 1
                                       ELSE max(rank) + 1
                                     END as rank
                                FROM dtb_class
-                              WHERE del_flg = 0) as x)";
+                              WHERE del_flg = 0) as x)';
             unset($values['rank']);
         }
         $this->objQuery->insert('dtb_class', $values, $subQueries);
@@ -336,7 +335,7 @@ class Generator
             'creator_id' => self::DEFAULT_CREATOR_ID,
             'create_date' => 'CURRENT_TIMESTAMP',
             'update_date' => 'CURRENT_TIMESTAMP',
-            'del_flg' => 0
+            'del_flg' => 0,
         ];
 
         return $this->objQuery->extractOnlyColsOf('dtb_classcategory', $values);
@@ -347,6 +346,7 @@ class Generator
      *
      * @param int $class_id 規格ID
      * @param string $classcategory_name 規格分類名
+     *
      * @return int 規格分類ID
      */
     public function createClassCategory($class_id, $classcategory_name = null)
@@ -354,13 +354,13 @@ class Generator
         $values = $this->createClassCategoryAsArray($class_id, $classcategory_name);
         $subQueries = [];
         if ($values['rank'] === 0) {
-            $subQueries['rank'] = sprintf("(SELECT x.rank FROM (SELECT CASE
+            $subQueries['rank'] = \sprintf('(SELECT x.rank FROM (SELECT CASE
                                               WHEN max(rank) + 1 IS NULL THEN 1
                                               ELSE max(rank) + 1
                                             END as rank
                                        FROM dtb_classcategory
                                       WHERE del_flg = 0
-                                        AND class_id = %d) as x)", $class_id);
+                                        AND class_id = %d) as x)', $class_id);
         }
 
         $this->objQuery->insert('dtb_classcategory', $values, $subQueries);
@@ -385,6 +385,7 @@ class Generator
      *
      * @param int $max_depth 最大階層深度
      * @param int $max_generations 最大生成数
+     *
      * @return array 生成したカテゴリIDの配列
      */
     public function createCategories($max_depth = 5, $max_generations = 30)
@@ -403,8 +404,10 @@ class Generator
                 return [];
             }
             $c = array_pad([], $n, '');
+
             return array_map(function ($id) use ($objQuery) {
                 $id = $objQuery->nextVal('dtb_category_category_id');
+
                 return $id;
             }, $c);
         }, $hierarchy));
@@ -416,7 +419,7 @@ class Generator
                 // root カテゴリ以外は, 1階層上のカテゴリをランダムに親とする
                 $parent_category_id = $level === 0
                     ? 0
-                    : $category_ids[$level - 1][$this->faker->numberBetween(0, count($category_ids[$level - 1]) - 1)];
+                    : $category_ids[$level - 1][$this->faker->numberBetween(0, \count($category_ids[$level - 1]) - 1)];
                 $result[] = $this->createCategory($id, $parent_category_id, $level + 1);
             }
         }
@@ -437,6 +440,7 @@ class Generator
      * @param int $parent_category_id 親カテゴリID
      * @param int $level 階層
      * @param string $category_name カテゴリ名
+     *
      * @return array カテゴリのダミーデータの配列
      */
     public function createCategoryAsArray($category_id = null, $parent_category_id = 0, $level = 1, $category_name = null)
@@ -452,8 +456,9 @@ class Generator
             'creator_id' => self::DEFAULT_CREATOR_ID,
             'create_date' => 'CURRENT_TIMESTAMP',
             'update_date' => 'CURRENT_TIMESTAMP',
-            'del_flg' => 0
+            'del_flg' => 0,
         ];
+
         return $this->objQuery->extractOnlyColsOf('dtb_category', $values);
     }
 
@@ -464,6 +469,7 @@ class Generator
      * @param int $parent_category_id 親カテゴリID
      * @param int $level 階層
      * @param string $category_name カテゴリ名
+     *
      * @return int カテゴリID
      */
     public function createCategory($category_id = null, $parent_category_id = 0, $level = 1, $category_name = null)
@@ -479,6 +485,7 @@ class Generator
      *
      * @param int $product_id 商品ID
      * @param array $category_ids カテゴリIDの配列
+     *
      * @return array 関連づけ済みのカテゴリIDの配列
      */
     public function relateProductCategories($product_id, $category_ids = [])
@@ -488,8 +495,9 @@ class Generator
             $this->objQuery->insert('dtb_product_categories', [
                 'product_id' => $product_id,
                 'category_id' => $category_id,
-                'rank' => $rank
+                'rank' => $rank,
             ]);
+
             return $category_id;
         }, $category_ids);
     }
@@ -510,7 +518,7 @@ class Generator
         $classcategory_name1 = $this->objQuery->get('name', 'dtb_classcategory', 'classcategory_id = ?', [$productsClassValues['classcategory_id1']]);
 
         $classcategory_name2 = $this->objQuery->get('name', 'dtb_classcategory', 'classcategory_id = ?', [$productsClassValues['classcategory_id2']]);
-        $taxRuleValues = SC_Helper_TaxRule_Ex::getTaxRule($productsValues['product_id'], $productsClassValues['product_class_id']);
+        $taxRuleValues = \SC_Helper_TaxRule_Ex::getTaxRule($productsValues['product_id'], $productsClassValues['product_class_id']);
         $values = [
             'order_detail_id' => $this->objQuery->nextVal('dtb_order_detail_order_detail_id'),
             'order_id' => $order_id,
@@ -520,7 +528,7 @@ class Generator
             'product_code' => $productsClassValues['product_code'],
             'classcategory_name1' => $classcategory_name1,
             'classcategory_name2' => $classcategory_name2,
-            'price' => SC_Helper_TaxRule_Ex::sfCalcIncTax(
+            'price' => \SC_Helper_TaxRule_Ex::sfCalcIncTax(
                 $productsClassValues['price02'],
                 $productsValues['product_id'],
                 $productsClassValues['product_class_id']
@@ -528,7 +536,7 @@ class Generator
             'quantity' => $this->faker->numberBetween(1, 100),
             'point_rate' => 10,
             'tax_rate' => $taxRuleValues['tax_rate'],
-            'tax_rule' => $taxRuleValues['tax_rule_id']
+            'tax_rule' => $taxRuleValues['tax_rule_id'],
         ];
 
         return $this->objQuery->extractOnlyColsOf('dtb_order_detail', $values);
@@ -544,12 +552,13 @@ class Generator
      * @param int $add_charge 手数料
      * @param int $add_discount 値引
      * @param int $order_status_id 指定する注文ステータス
+     *
      * @return array dtb_order_temp のダミーデータの配列
      */
     public function createOrderTempAsArray($order_id = 0, $subtotal = 0, $customer_id = 0, $deliv_id = 0, $add_charge = 0, $add_discount = 0, $order_status_id = ORDER_NEW)
     {
         $customerValues = $this->objQuery->getRow('*', 'dtb_customer', 'customer_id = ?', [$customer_id]);
-        if (SC_Utils_Ex::isBlank($customerValues)) {
+        if (\SC_Utils_Ex::isBlank($customerValues)) {
             $customerValues = $this->createCustomerAsArray();
         }
         $delivValues = $this->objQuery->getRow('*', 'dtb_deliv', 'deliv_id = ?', [$deliv_id]);
@@ -557,10 +566,10 @@ class Generator
         $discount = $add_discount === 0 ? $this->faker->numberBetween(0, $subtotal) : $add_discount;
         $charge = $add_charge === 0 ? $this->faker->numberBetween(0, $subtotal) : $add_charge;
         $payment_ids = $this->objQuery->getCol('payment_id', 'dtb_payment_options', 'deliv_id = ?', [$deliv_id]);
-        $paymentValues = $this->objQuery->getRow('*', 'dtb_payment', 'payment_id = ?', $payment_ids[$this->faker->numberBetween(0, count($payment_ids) - 1)]);
+        $paymentValues = $this->objQuery->getRow('*', 'dtb_payment', 'payment_id = ?', $payment_ids[$this->faker->numberBetween(0, \count($payment_ids) - 1)]);
 
         $values = [
-            'order_temp_id' => SC_Utils_Ex::sfGetRandomString(10),
+            'order_temp_id' => \SC_Utils_Ex::sfGetRandomString(10),
             'customer_id' => $customer_id,
             'message' => $this->faker->address,
             'subtotal' => $subtotal,
@@ -571,7 +580,7 @@ class Generator
             'use_point' => 0,
             'add_point' => 0,
             'birth_point' => 0,
-            'tax' => SC_Helper_TaxRule_Ex::sfTax($subtotal),
+            'tax' => \SC_Helper_TaxRule_Ex::sfTax($subtotal),
             'total' => $subtotal + $deliv_fee + $charge - $discount,
             'payment_id' => $paymentValues['payment_id'],
             'payment_method' => $paymentValues['payment_method'],
@@ -584,9 +593,9 @@ class Generator
             'update_date' => 'CURRENT_TIMESTAMP',
             'device_type_id' => 1,
             'del_flg' => 1,
-            'order_id' => $order_id
+            'order_id' => $order_id,
         ];
-        $values['payment_total'] =  $values['total'];
+        $values['payment_total'] = $values['total'];
         foreach ($customerValues as $key => $value) {
             $values['order_'.$key] = $value;
         }
@@ -599,12 +608,13 @@ class Generator
      *
      * @param array $orderValues dtb_order の配列
      * @param int $shipping_id shipping_id
+     *
      * @return array dtb_shipping のダミーデータの配列
      */
     public function createShippingFromOrderAsArray($orderValues, $shipping_id = 0)
     {
         $delivTimeValues = $this->objQuery->select('*', 'dtb_delivtime', 'deliv_id = ?', [$orderValues['deliv_id']]);
-        $deliv_time_key = $this->faker->numberBetween(0, count($delivTimeValues) - 1);
+        $deliv_time_key = $this->faker->numberBetween(0, \count($delivTimeValues) - 1);
         $shipping_id = 0;
         $shippingValues = [
             'shipping_id' => $shipping_id,
@@ -617,8 +627,8 @@ class Generator
             'del_flg' => 0,
         ];
 
-        /** @var SC_Helper_Purchase_Ex $objPurchase */
-        $objPurchase = new SC_Helper_Purchase_Ex();
+        /** @var \SC_Helper_Purchase_Ex $objPurchase */
+        $objPurchase = new \SC_Helper_Purchase_Ex();
         $objPurchase->copyFromOrder($shippingValues, $orderValues);
 
         return $this->objQuery->extractOnlyColsOf('dtb_shipping', $shippingValues);
@@ -629,6 +639,7 @@ class Generator
      *
      * @param array $orderDetailValues dtb_order_detail の配列
      * @param int $shipping_id shipping_id
+     *
      * @return array dtb_shipment_item の配列
      */
     public function creatShipmentItemFromOrderDetailAsArray($orderDetailValues, $shipping_id = 0)
@@ -654,6 +665,7 @@ class Generator
      * @param int $add_charge 手数料
      * @param int $add_discount 値引
      * @param int $order_status_id 指定する注文ステータス
+     *
      * @return int order_id
      */
     public function createOrder($customer_id = 0, $product_class_ids = [], $deliv_id = 1, $add_charge = 0, $add_discount = 0, $order_status_id = ORDER_NEW)
@@ -692,6 +704,7 @@ class Generator
 
         array_map(function ($detailValues) {
             $this->objQuery->insert('dtb_order_detail', $detailValues);
+
             return $detailValues;
         }, $orderDetails);
 
@@ -700,6 +713,7 @@ class Generator
 
         array_map(function ($detailValues) {
             $this->objQuery->insert('dtb_shipment_item', $this->creatShipmentItemFromOrderDetailAsArray($detailValues));
+
             return $detailValues;
         }, $orderDetails);
 
@@ -707,6 +721,6 @@ class Generator
     }
 }
 
-if (!\class_exists('FixtureGenerator')) {
-    \class_alias('Eccube2\Tests\Fixture\Generator', 'FixtureGenerator');
+if (!class_exists('FixtureGenerator')) {
+    class_alias('Eccube2\Tests\Fixture\Generator', 'FixtureGenerator');
 }
