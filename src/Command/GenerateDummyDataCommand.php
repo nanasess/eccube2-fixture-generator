@@ -16,7 +16,7 @@ class GenerateDummyDataCommand extends Command
     /** @var string */
     protected static $defaultName = 'eccube:fixtures:generate';
 
-    public function __construct(string $name = null)
+    public function __construct(?string $name = null)
     {
         parent::__construct($name);
     }
@@ -86,10 +86,10 @@ EOF
             // 5件以上のカテゴリを生成する
             do {
                 $category_ids = array_merge($category_ids, $objGenerator->createCategories());
-            } while (count($category_ids) < 5);
+            } while (\count($category_ids) < 5);
 
             foreach ($product_ids as $product_id) {
-                $num = $faker->numberBetween(2, count($category_ids) - 1);
+                $num = $faker->numberBetween(2, \count($category_ids) - 1);
                 $objGenerator->relateProductCategories($product_id, array_rand(array_flip($category_ids), $num >= 2 ? $num : 2));
             }
             $objDb = new \SC_Helper_DB_Ex();
@@ -105,14 +105,14 @@ EOF
         if ($num < $numberOfOrder) {
             $io->write('Generating Orders');
             foreach ($customer_ids as $customer_id) {
-                $target_product_class_ids = array_rand(array_flip($product_class_ids), $faker->numberBetween(2, count($product_class_ids) - 1));
+                $target_product_class_ids = array_rand(array_flip($product_class_ids), $faker->numberBetween(2, \count($product_class_ids) - 1));
                 $charge = $faker->randomNumber(4);
                 $discount = $faker->numberBetween(0, $charge);
                 $order_count_per_customer = $objQuery->count('dtb_order', 'customer_id = ?', [$customer_id]);
-                for ($i = $order_count_per_customer; $i < $numberOfOrder / count($customer_ids); $i++) {
+                for ($i = $order_count_per_customer; $i < $numberOfOrder / \count($customer_ids); $i++) {
                     // キャンセルと決済処理中は除外して注文を生成する
                     $target_statuses = [ORDER_NEW, ORDER_PAY_WAIT, ORDER_PRE_END, ORDER_BACK_ORDER, ORDER_DELIV];
-                    $order_status_id = $target_statuses[$faker->numberBetween(0, count($target_statuses) - 1)];
+                    $order_status_id = $target_statuses[$faker->numberBetween(0, \count($target_statuses) - 1)];
                     $objGenerator->createOrder($customer_id, $target_product_class_ids, 1, $charge, $discount, $order_status_id);
                     $io->write('.');
                 }
