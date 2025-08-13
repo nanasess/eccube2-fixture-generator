@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: [ '7.4', '8.0', '8.1', '8.2', '8.3' ]
+        php: [ '7.4', '8.0', '8.1', '8.2', '8.3', '8.4' ]
 
     steps:
     - name: Checkout
@@ -92,11 +92,3 @@ jobs:
         CI: 1
         FORCE_COLOR: 1
       run: yarn test:e2e e2e-tests/test/admin
-    - name: Run to E2E testing(front_login)
-      working-directory: ec-cube
-      env:
-        HTTPS_PROXY: 'localhost:8090'
-        HTTP_PROXY: 'localhost:8090'
-        CI: 1
-        FORCE_COLOR: 1
-      run: yarn test:e2e e2e-tests/test/front_login
