@@ -25,11 +25,11 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         path: 'eccube2-fixture-generator'
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: 'EC-CUBE/ec-cube2'
         path: 'ec-cube'
