@@ -92,7 +92,7 @@ class Generator
             'reminder' => $this->faker->numberBetween(1, 7),
             'reminder_answer' => $this->faker->word,
             'mailmaga_flg' => $this->faker->numberBetween(1, 2),
-            'birth' => $this->faker->dateTimeThisDecade()->format('Y-m-d H:i:s'),
+            'birth' => $this->faker->dateTimeBetween('-80 years', '-18 years')->format('Y-m-d H:i:s'),
             'status' => '2',     // 本会員
             'secret_key' => \SC_Helper_Customer_Ex::sfGetUniqSecretKey(),
             'point' => $this->faker->numberBetween(1, 9999),
